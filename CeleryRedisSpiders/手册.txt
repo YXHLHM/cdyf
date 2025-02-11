@@ -1,0 +1,35 @@
+CeleryRedisSpiders/
+├── config.py          # Celery配置
+├── tasks.py           # 任务定义
+├── producer.py        # 生产者脚本
+├── utils/
+│   ├── http_client.py # 封装的HTTP客户端
+│   └── parser.py      # 页面解析器
+└── requirements.txt
+
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  requests
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  loguru==0.7.0
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  schedule
+
+
+
+--pool=solo  # 单线程
+--pool=gevent  # gevent的封装， 更适合爬虫 gevent与eventlet 都是基于 协程（coroutine） 的并发模式，适用于 I/O 密集型任务
+--pool=eventlet
+
+# 启动 Worker
+celery -A tasks worker -Q list_queue,detail_queue --pool=gevent -l INFO -c 16
+celery -A tasks worker -Q list_queue,detail_queue --pool=solo -l INFO  # 单线程
+
+
+########################################################################################################################
+
+# 启动 Worker
+celery -A tasks worker -Q list_queue,detail_queue,periodic_queue --pool=gevent -l INFO -c 8
+# 监控 Celery
+celery -A tasks flower --port=8080 --basic_auth=admin:123456
+# 启动定时任务
+celery -A tasks beat --loglevel=info
+
+########################################################################################################################
